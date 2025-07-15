@@ -177,7 +177,7 @@ if __name__ == "__main__":
 `;
 
             try {
-                const response = await fetch('http://4.188.74.28:4000/api/run-python', {
+                const response = await fetch('/api/python-proxy', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
