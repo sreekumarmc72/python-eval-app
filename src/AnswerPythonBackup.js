@@ -3,7 +3,6 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "./CustomView.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import { Modal, Button } from "react-bootstrap";
-import Editor from '@monaco-editor/react';
 import config from './config';
 
 // Safe render function to prevent object rendering
@@ -35,9 +34,6 @@ const Answer = () => {
     const [malpracticeMessage, setMalpracticeMessage] = useState("");
     const [focusLossCount, setFocusLossCount] = useState(0);
     const [showFocusWarningModal, setShowFocusWarningModal] = useState(false);
-    const [output, setOutput] = useState("");
-    const [isRunning, setIsRunning] = useState(false);
-    const [showOutput, setShowOutput] = useState(false);
 
     // Debug: Log what we're actually rendering
     console.log('Component rendered with:', {
@@ -133,73 +129,16 @@ const Answer = () => {
         };
     }, [malpracticeCount, focusLossCount, showFocusWarningModal]);
 
-    const handleCodeChange = (value) => {
-        console.log('Code changed to:', typeof value, value?.length);
-        setCode(value || '');
+    const handleCodeChange = (e) => {
+        const newCode = e.target.value;
+        console.log('Code changed to:', typeof newCode, newCode.length);
+        setCode(newCode);
         setErrorMessage("");
         setFailedCases([]);
         setMalpracticeCount(0);
         setShowMalpracticeModal(false);
         setFocusLossCount(0);
         setShowFocusWarningModal(false);
-        setOutput(""); // Clear output when code changes
-    };
-
-    const handleRunCode = async () => {
-        if (malpracticeCount >= 3) return;
-        
-        setIsRunning(true);
-        setOutput("");
-        setShowOutput(true);
-
-        // Test with the same inputs as validation to show user what their function does
-        const testInputs = [
-            { month: "Abc", cost: 40000, selling_price: 50000 },
-            { month: "june", cost: 40000, selling_price: 50000 },
-            { month: "jun", cost: 40000, selling_price: 50000 }
-        ];
-
-        let combinedOutput = "";
-
-        for (let i = 0; i < testInputs.length; i++) {
-            const { month, cost, selling_price } = testInputs[i];
-            const testCaseNumber = i + 1;
-            
-            const testScript = `
-${code}
-
-if __name__ == "__main__":
-    print(f"Test Case ${testCaseNumber}: month='${month}', cost=${cost}, selling_price=${selling_price}")
-    try:
-        calculate_profit("${month}", ${cost}, ${selling_price})
-    except Exception as e:
-        print(f"Error: {e}")
-    print("-" * 50)
-`;
-
-            try {
-                const response = await fetch(config.pythonApiUrl, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ code: testScript }),
-                });
-
-                const data = await response.json();
-                
-                if (response.ok && data.output) {
-                    combinedOutput += data.output + "\n";
-                } else {
-                    combinedOutput += `Test Case ${i + 1} Error: ${data.error || 'Unknown error'}\n`;
-                }
-            } catch (error) {
-                combinedOutput += `Test Case ${i + 1} Error: Failed to execute\n`;
-            }
-        }
-
-        setOutput(combinedOutput);
-        setIsRunning(false);
     };
 
     const validateCode = () => {
@@ -309,8 +248,6 @@ if __name__ == "__main__":
         setShowMalpracticeModal(false);
         setFocusLossCount(0);
         setShowFocusWarningModal(false);
-        setOutput("");
-        setShowOutput(false);
         setCode(`def calculate_profit(month, cost, selling_price):
     """
     calculate profit based on month and cost
@@ -340,98 +277,43 @@ if __name__ == "__main__":
         <div>
             <div className="container answer-block">
                 <div className="row mb-4">
-                    <div className={showOutput ? "col-md-6" : "col-md-12"}>
-                        <div className="d-flex justify-content-between align-items-center mb-2">
-                            <h5 className="mb-0">Python Code Editor</h5>
-                            <button
-                                className="btn btn-success btn-sm"
-                                onClick={handleRunCode}
-                                disabled={isRunning || malpracticeCount >= 3}
-                                style={{
-                                    backgroundColor: "#28a745",
-                                    border: "none",
-                                    padding: "5px 15px",
-                                    fontSize: "12px"
-                                }}
-                            >
-                                {isRunning ? (
-                                    <>
-                                        <span className="spinner-border spinner-border-sm me-2" role="status"></span>
-                                        Running...
-                                    </>
-                                ) : (
-                                    <>
-                                        <i className="bi bi-play-fill me-1"></i>
-                                        Run Code
-                                    </>
-                                )}
-                            </button>
-                        </div>
+                    <div className="col-md-12">
                         <div
+                            className="input-field code-editor"
                             style={{
+                                backgroundColor: '#f8f9fa',
                                 border: "1px solid #ccc",
                                 borderRadius: "5px",
-                                overflow: "hidden",
-                                height: "400px"
+                                padding: "10px",
+                                width: "100%",
+                                textAlign: "left"
                             }}
                         >
-                            <Editor
-                                height="400px"
-                                defaultLanguage="python"
-                                value={code}
-                                onChange={handleCodeChange}
-                                theme="vs-light"
-                                options={{
-                                    fontSize: 14,
-                                    lineNumbers: 'on',
-                                    roundedSelection: false,
-                                    scrollBeyondLastLine: false,
-                                    automaticLayout: true,
-                                    minimap: { enabled: false },
-                                    wordWrap: 'on',
-                                    tabSize: 4,
-                                    insertSpaces: true,
-                                    contextmenu: false, // Disable right-click menu
-                                    quickSuggestions: false, // Disable autocomplete
-                                    suggestOnTriggerCharacters: false,
-                                    acceptSuggestionOnEnter: 'off',
-                                    tabCompletion: 'off',
-                                    wordBasedSuggestions: false,
-                                    parameterHints: { enabled: false },
-                                    hover: { enabled: false }
-                                }}
-                            />
+                            <pre>
+                                <code>
+                                    <textarea
+                                        style={{
+                                            width: "100%",
+                                            height: "400px",
+                                            resize: "vertical",
+                                            border: "none",
+                                            outline: "none",
+                                            fontFamily: "'Consolas', 'Courier New', monospace",
+                                            fontSize: "14px",
+                                            lineHeight: "1.5",
+                                            padding: "10px",
+                                            backgroundColor: "#fff",
+                                            color: "#333",
+                                            borderRadius: "4px",
+                                            boxShadow: "inset 0 1px 3px rgba(0,0,0,0.1)"
+                                        }}
+                                        value={safeRender(code)}
+                                        onChange={handleCodeChange}
+                                    />
+                                </code>
+                            </pre>
                         </div>
                     </div>
-                    {showOutput && (
-                        <div className="col-md-6">
-                            <div className="d-flex justify-content-between align-items-center mb-2">
-                                <h5 className="mb-0">Output</h5>
-                                <button
-                                    className="btn btn-outline-secondary btn-sm"
-                                    onClick={() => setShowOutput(false)}
-                                    style={{ fontSize: "12px" }}
-                                >
-                                    <i className="bi bi-x-lg"></i>
-                                </button>
-                            </div>
-                            <div
-                                style={{
-                                    border: "1px solid #ccc",
-                                    borderRadius: "5px",
-                                    height: "400px",
-                                    backgroundColor: "#f8f9fa",
-                                    padding: "15px",
-                                    fontFamily: "'Consolas', 'Courier New', monospace",
-                                    fontSize: "13px",
-                                    overflow: "auto",
-                                    whiteSpace: "pre-wrap"
-                                }}
-                            >
-                                {output || "Click 'Run Code' to see the output of your function with sample test cases."}
-                            </div>
-                        </div>
-                    )}
                 </div>
                 <div className="row error-area">
                     {errorMessage && (failedCases.length > 0 || malpracticeCount >= 3) && (

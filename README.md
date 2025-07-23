@@ -1,70 +1,57 @@
-# Getting Started with Create React App
+# Python Evaluation App
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+This React application allows users to write and validate Python code with automatic environment detection for local development and production deployment.
 
-## Available Scripts
+## Environment Configuration
 
-In the project directory, you can run:
+The app automatically detects the environment and uses appropriate API endpoints:
 
-### `npm start`
+- **Local Development**: Calls Python API directly at `http://4.188.74.28:4000/api/run-python`
+- **Production (Vercel)**: Uses proxy endpoint `/api/python-proxy`
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+## Local Development
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+1. Install dependencies:
+   ```bash
+   npm install
+   ```
 
-### `npm test`
+2. Start the development server:
+   ```bash
+   npm start
+   ```
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+3. The app will run on `http://localhost:4000` and automatically use the direct Python API endpoint.
 
-### `npm run build`
+## Production Deployment (Vercel)
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+1. The app is configured for Vercel deployment with:
+   - `api/python-proxy.js` - Serverless function that proxies requests to the Python API
+   - `vercel.json` - Deployment configuration
+   - Automatic environment detection
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+2. Deploy to Vercel:
+   ```bash
+   vercel --prod
+   ```
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+## API Configuration
 
-### `npm run eject`
+The configuration is handled in `src/config.js`:
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+- Detects environment based on `NODE_ENV` and hostname
+- Automatically switches between direct API calls (local) and proxy (production)
+- Includes debug logging to help troubleshoot environment detection
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+## Troubleshooting
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+1. **API calls failing locally**: Check browser console for environment detection logs
+2. **CORS issues**: The Python API at `4.188.74.28:4000` must have CORS enabled
+3. **Vercel deployment issues**: Check that `api/python-proxy.js` is properly deployed as a serverless function
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+## Files Modified
 
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+- `src/Answer.js` - Updated to use environment-based configuration
+- `src/config.js` - New configuration file for environment detection
+- `vercel.json` - Vercel deployment configuration
+- `README.md` - This documentation
