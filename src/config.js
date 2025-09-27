@@ -2,7 +2,8 @@
 const config = {
   development: {
     // For local development, call the Python API directly
-    pythonApiUrl: 'http://4.188.74.28:4000/api/run-python'
+    // pythonApiUrl: 'http://4.188.74.28:4000/api/run-python'
+    pythonApiUrl: 'http://localhost:3000/api/run-python'
   },
   production: {
     // For Vercel deployment, use the proxy endpoint

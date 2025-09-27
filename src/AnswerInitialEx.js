@@ -17,66 +17,16 @@ const safeRender = (value) => {
 };
 
 const Answer = () => {
-    // Initial code template
-    const initialCodeValue = `import math
-
-def calculate_min(data_set):
-    """
-    data_set: list of expenses
-    return: minimum value
-    """
-    pass
-
-def calculate_max(data_set):
-    """
-    data_set: list of expenses
-    return: maximum value
-    """
-    pass
-
-def calculate_average(data_set):
-    """
-    data_set: list of expenses
-    return: average of expenses
-    """
-    pass
-
-def convert_input(input_data):
-    """
-    input_data: input from user
-    return: list of expenses
-    """
-    pass
-
-def process_expense(expenses):
-    data_set = convert_input(expenses)
-    max_val = calculate_max(data_set)
-    min_val = calculate_min(data_set)
-    avg = calculate_average(data_set)
-    print(f"Your minimum expense is {min_val} maximum is {max_val} and average is {avg}")
-
-def check_number(s: str):
-    try:
-        int(s)
-        return True
-    except ValueError:
-        try:
-            float(s)
-            return True
-        except ValueError:
-            return False
-
-if __name__ == "__main__":
-    # Accept input from the user as a comma-separated list
-    expenses = input("Enter expenses separated by commas: ")
-    exp_len = len(expenses.split(","))
-    if (exp_len <= 0 or len([number for number in expenses.split(",") if check_number(number)]) != exp_len):
-        print("Invalid expense input")
-    else:
-        process_expense(expenses)`;
-
     // Initial state contains only the calculate_profit function template
-    const [code, setCode] = useState(initialCodeValue);
+    const [code, setCode] = useState(`def calculate_profit(month, cost, selling_price):
+    """
+    calculate profit based on month and cost
+    1. need to print the output from here after calculation
+    2. if month is not valid print error
+    expected month values: 'jan', 'feb', 'mar', 'apr', 'may',
+    'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'
+    """
+    pass`);
     const [showModal, setShowModal] = useState(false);
     const [errorMessage, setErrorMessage] = useState("");
     const [failedCases, setFailedCases] = useState([]);
@@ -195,26 +145,6 @@ if __name__ == "__main__":
         setOutput(""); // Clear output when code changes
     };
 
-    const replaceMainFunction = (code, newMainBlock) => {
-        // Find the main block line
-        const mainIndex = code.indexOf('if __name__ == "__main__":');
-
-        if (mainIndex === -1) {
-            // No main block found, return original code
-            return code;
-        }
-
-        // Get everything before the main block
-        const beforeMain = code.substring(0, mainIndex);
-
-        // Replace with new main block (indented)
-        const indentedBlock = newMainBlock.split('\n').map(line =>
-            line.trim() ? '    ' + line : ''
-        ).join('\n');
-
-        return beforeMain + 'if __name__ == "__main__":\n' + indentedBlock;
-    };
-
     const handleRunCode = async () => {
         if (malpracticeCount >= 3) return;
         
@@ -224,34 +154,28 @@ if __name__ == "__main__":
 
         // Test with the same inputs as validation to show user what their function does
         const testInputs = [
-            "5,6",
-            "8,9,90"
+            { month: "Abc", cost: 40000, selling_price: 50000 },
+            { month: "june", cost: 40000, selling_price: 50000 },
+            { month: "jun", cost: 40000, selling_price: 50000 }
         ];
 
         let combinedOutput = "";
 
         for (let i = 0; i < testInputs.length; i++) {
-            const expenses = testInputs[i];
+            const { month, cost, selling_price } = testInputs[i];
             const testCaseNumber = i + 1;
+            
+            const testScript = `
+${code}
 
-            const newMainBlock = `
-print(f"Test Case ${testCaseNumber}: expenses='${expenses}'")
-try:
-    expenses_input = "${expenses}"
-    exp_len = len(expenses_input.split(","))
-    if (exp_len <= 0 or len([number for number in expenses_input.split(",") if number.strip()]) != exp_len):
-        print("Invalid expense input")
-    else:
-        process_expense(expenses_input)
-except Exception as e:
-    print(f"Error: {e}")
-print("-" * 50)`;
-
-            const testScript = replaceMainFunction(code, newMainBlock);
-
-            console.log("code", code);
-            console.log("newMainBlock", newMainBlock);
-            console.log("testScript", testScript);
+if __name__ == "__main__":
+    print(f"Test Case ${testCaseNumber}: month='${month}', cost=${cost}, selling_price=${selling_price}")
+    try:
+        calculate_profit("${month}", ${cost}, ${selling_price})
+    except Exception as e:
+        print(f"Error: {e}")
+    print("-" * 50)
+`;
 
             try {
                 const response = await fetch(config.pythonApiUrl, {
@@ -278,35 +202,41 @@ print("-" * 50)`;
         setIsRunning(false);
     };
 
-    const validateCode = async () => {
-        // First check for pass statements
+    const validateCode = () => {
         if (code.includes("pass")) {
-            setErrorMessage("Please implement the expense calculation functions.");
+            setErrorMessage("Please implement the calculate_profit function.");
             setFailedCases([]);
             return false;
         }
+        return true;
+    };
+
+    const handleValidateButton = async () => {
+        if (malpracticeCount >= 3 || !validateCode()) return;
 
         // Define test cases
         const testCases = [
-            { inputs: ["5,6"], expected: "Your minimum expense is 5.0 maximum is 6.0 and average is 5.0" },
-            { inputs: ["8,9,90"], expected: "Your minimum expense is 8.0 maximum is 90.0 and average is 35.0" }
+            { inputs: ["Abc", 40000, 50000], expected: "error" },
+            { inputs: ["june", 40000, 50000], expected: "error" },
+            { inputs: ["jun", 40000, 50000], expected: "For month jun you have profit 10000 which is 25 %." }
         ];
 
         const newFailedCases = [];
 
         for (let i = 0; i < testCases.length; i++) {
             const { inputs, expected } = testCases[i];
+            const [month, cost, selling_price] = inputs;
 
-            const newMainBlock = `
-expenses_input = "${inputs[0]}"
-exp_len = len(expenses_input.split(","))
-if (exp_len <= 0 or len([number for number in expenses_input.split(",") if number.strip()]) != exp_len):
-    print("Invalid expense input")
-else:
-    process_expense(expenses_input)
+            // Construct the full script for this test case
+            const fullScript = `
+${code}
+
+if __name__ == "__main__":
+    month = "${month}"
+    cost = float("${cost}")
+    selling_price = float("${selling_price}")
+    calculate_profit(month, cost, selling_price)
 `;
-
-            const testScript = replaceMainFunction(code, newMainBlock);
 
             try {
                 const response = await fetch(config.pythonApiUrl, {
@@ -314,10 +244,11 @@ else:
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({ code: testScript }),
+                    body: JSON.stringify({ code: fullScript }),
                 });
 
                 const data = await response.json();
+                console.log(`API Response for test case ${i + 1}:`, data);
 
                 if (!response.ok) {
                     newFailedCases.push({
@@ -348,6 +279,7 @@ else:
                         });
                     }
                 } catch (parseError) {
+                    console.error(`Parse Error for test case ${i + 1}:`, parseError);
                     newFailedCases.push({
                         inputs,
                         expected,
@@ -355,6 +287,7 @@ else:
                     });
                 }
             } catch (error) {
+                console.error(`Error for test case ${i + 1}:`, error);
                 newFailedCases.push({
                     inputs,
                     expected,
@@ -364,29 +297,8 @@ else:
         }
 
         setFailedCases(newFailedCases);
-
-        // Set error message if there are failed cases
-        if (newFailedCases.length > 0) {
-            setErrorMessage(`Validation failed for ${newFailedCases.length} test case(s). Please check the failed cases below.`);
-        }
-
-        return newFailedCases.length === 0;
-    };
-
-    const handleValidateButton = async () => {
-        if (malpracticeCount >= 3) return;
-
-        // Clear previous error state
-        setErrorMessage("");
-        setFailedCases([]);
-
-        const isValid = await validateCode();
-        if (!isValid) {
-            // Error message and failed cases are already set by validateCode
-            return;
-        }
-
-        setShowModal(true);
+        setShowModal(newFailedCases.length === 0 && malpracticeCount < 3);
+        setErrorMessage(newFailedCases.length > 0 ? `Validation failed for ${newFailedCases.length} test case(s):` : (malpracticeCount >= 3 ? errorMessage : ""));
     };
 
     const handleCloseModal = () => {
@@ -399,7 +311,15 @@ else:
         setShowFocusWarningModal(false);
         setOutput("");
         setShowOutput(false);
-        setCode(initialCodeValue);
+        setCode(`def calculate_profit(month, cost, selling_price):
+    """
+    calculate profit based on month and cost
+    1. need to print the output from here after calculation
+    2. if month is not valid print error
+    expected month values: 'jan', 'feb', 'mar', 'apr', 'may',
+    'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'
+    """
+    pass`);
     };
 
     const handleMalpracticeContinue = () => {
@@ -514,7 +434,7 @@ else:
                     )}
                 </div>
                 <div className="row error-area">
-                    {errorMessage && (
+                    {errorMessage && (failedCases.length > 0 || malpracticeCount >= 3) && (
                         <div style={{color: "#B52556", fontWeight: "bold", padding: "10px", backgroundColor: "#FCE8F1", borderRadius: "5px", margin: "10px 0", whiteSpace: "pre-wrap"}}>
                             <p style={{color: "#932121"}}>{errorMessage}</p>
                             {failedCases.length > 0 && (

@@ -46,26 +46,31 @@ export const App = () => {
                                 >
 
 
-                                    <h4><b>Question : You are requested to create an expense analyzer</b></h4>
+                                    <h4><b>Question : You are requested to create a calculator</b></h4>
                                     <p>
-                                        <strong>Description:</strong> A man needs to record monthly avg , min, max expense from a set of expenses he recorded. He will have each day expenses for 'N' no of days in his hand. We need to create a python program to help the man to identify average, minimum, maximum expenses.
+                                        <strong>Description:</strong> A company owner needs to find each month profit / loss. All he has is the total cost of the month and selling price of the month.
                                     </p>
 
                                     <h4><b>Expected program need the following:</b></h4>
                                     <ul style={{ marginTop: "15px" }}>
-                                        <li style={{ marginBottom: "10px" }}>Need to accept the expenses recorded</li>
-                                        <li style={{ marginBottom: "10px" }}>Define the functions provided in the template (calculate_min, calculate_max,calculate_average,convert_input )</li>
-                                        <li style={{ marginBottom: "10px" }}>The program will use functions defined.</li>
-                                        <li style={{ marginBottom: "10px" }}>No need of updating other portions in the program.</li>
-                                        <li style={{ marginBottom: "10px" }}>Expected Output: "Your minimum expense is 10 maximum is 100 and average is 50"</li>
-                                        <li style={{ marginBottom: "10px" }}>Averages can be rounded to the floor.</li>
+                                        <li style={{ marginBottom: "10px" }}>Need to accept the month, cost and selling price</li>
+                                        <li style={{ marginBottom: "10px" }}>Make sure entered month is valid else print "error"</li>
+                                        <li style={{ marginBottom: "10px" }}>Expected Output: "For month April you have profit 100 which is 10 % "</li>
                                     </ul>
 
                                     <h4><b>Example:</b></h4>
-                                    <p>Eg: for a set 56,60,75 output will be Your minimum expense is 56 maximum is 75 and average is 63.</p>
+                                    <p>For month april with 50000 cost and 60000 selling price.</p>
+                                    <p><strong>Output:</strong> For month April you have profit 10000 which is 25 %.</p>
 
                                     <h4><b>Coding Platform structure:</b></h4>
                                     <p>Platform should inform student it is <strong>python3</strong></p>
+
+                                    <h4><b>Test input set:</b></h4>
+                                    <ul style={{ marginTop: "15px" }}>
+                                        <li style={{ marginBottom: "10px" }}><strong>Input:</strong> Abc, 40000, 50000 → <strong>Output:</strong> error</li>
+                                        <li style={{ marginBottom: "10px" }}><strong>Input:</strong> june, 40000, 50000 → <strong>Output:</strong> error</li>
+                                        <li style={{ marginBottom: "10px" }}><strong>Input:</strong> jun, 40000, 50000 → <strong>Output:</strong> For month jun you have profit 10000 which is 25 %.</li>
+                                    </ul>
 
                         
 
